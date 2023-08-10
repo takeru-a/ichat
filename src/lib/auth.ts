@@ -33,10 +33,11 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
+        // Signin時に呼ばれる
         // ユーザ情報の取得、JWTTokenの取得
         async jwt ({ token, user }) {
             const dbUser = (await db.get(`user:${token.id}`)) as User | null
-            
+            // ユーザが存在しない場合
             if(!dbUser){
                 token.id = user!.id
                 return token
@@ -48,11 +49,11 @@ export const authOptions: NextAuthOptions = {
                 picture: dbUser.image,
             }
         },
-
+        // セッションが確認されるたびに呼び出される。
         // jwt-tokenがあればsessionにユーザ情報を格納する
         async session({session, token}) {
 
-            // 新しいトークンを返す
+            // Jwtトークンがあればセッションにユーザ情報を格納して返す
             if(token){
                 session.user.id = token.id
                 session.user.name = token.name
