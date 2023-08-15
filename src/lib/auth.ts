@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth"
 import { UpstashRedisAdapter } from "@auth/upstash-redis-adapter"
 import { db } from "./db"
 import GoogleProvider from "next-auth/providers/google"
+import { fetchRedis } from "@/helpers/redis"
 
 
 function getGoogleCredentials(){
@@ -36,12 +37,18 @@ export const authOptions: NextAuthOptions = {
         // Signin時に呼ばれる
         // ユーザ情報の取得、JWTTokenの取得
         async jwt ({ token, user }) {
-            const dbUser = (await db.get(`user:${token.id}`)) as User | null
+            const dbUserResult = (await fetchRedis('get', `user:${token.id}`)) as
+            | string
+            | null
+
             // ユーザが存在しない場合
-            if(!dbUser){
+            if(!dbUserResult){
                 token.id = user!.id
                 return token
             }
+
+            const dbUser = JSON.parse(dbUserResult) as User
+
             return {
                 id: dbUser.id,
                 name: dbUser.name,
