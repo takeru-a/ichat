@@ -1,9 +1,11 @@
 'use client'
 
+import { pusherClient } from '@/lib/pusher'
+import { toPusherKey } from '@/lib/utils'
 import axios from 'axios'
 import { Check, UserPlus, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 
 
 interface FriendRequestsProps {
@@ -21,6 +23,30 @@ const FriendRequests: FC<FriendRequestsProps> = ({
     const [friendRequests, setFriendRequests] =  useState<IncomingFriendRequest[]>(
         incomingFriendRequests
     )
+
+    useEffect(() => {
+        // チャンネルの購読開始
+        pusherClient.subscribe(
+            toPusherKey(`user:${sessionId}:incoming_friend_requests`)
+        )
+
+        const friendRequestHandler = ({
+            senderId,
+            senderEmail,
+        }: IncomingFriendRequest) => {
+            setFriendRequests((prev) => [...prev, {senderId, senderEmail}])
+        }
+
+        pusherClient.bind('incoming_friend_requests', friendRequestHandler)
+
+        // 購読の削除
+        return () => {
+            pusherClient.unsubscribe(
+                toPusherKey(`user:${sessionId}:incoming_friend_requests`)
+            )
+            pusherClient.unbind('incoming_friend_requests', friendRequestHandler)
+        }
+    }, [sessionId])
 
 
 
@@ -51,7 +77,7 @@ const FriendRequests: FC<FriendRequestsProps> = ({
     <>
     {/* フレンド申請があるかないか */}
     {friendRequests.length === 0 ? (
-        <p className='text-sm text-zinc-500'>Nothing to show here...</p>
+        <p className='text-sm text-zinc-500'>承認待ちのフレンド申請はありません</p>
     ) : (
         friendRequests.map((request) => (
             <div key={request.senderId} className='flex gap-4 items-center'>
