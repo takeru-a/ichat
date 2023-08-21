@@ -2,7 +2,7 @@ import { authOptions } from '@/lib/auth'
 import { getServerSession } from 'next-auth'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import {ReactNode} from 'react'
+import { ReactNode } from 'react'
 import { Icons, Icon } from '@/components/Icons'
 import Image from 'next/image'
 import { SignOutButton } from '@/components/SignOutButton'
@@ -10,16 +10,12 @@ import { fetchRedis } from '@/helpers/redis'
 import { FriendRequestSidebarOptions } from '@/components/FriendRequestSidebarOptions'
 import { getFriendsByUserId } from '@/helpers/get-friends-by-user-id'
 import SidebarChatList from '@/components/SidebarChatList'
+import MobileChatLayout from '@/components/MobileChatLayout'
+import { SidebarOption } from '@/types/typings'
+import { HomeIcon } from '@/components/HomeIcon'
 
 interface LayoutProps {
     children: ReactNode
-}
-
-interface SidebarOption {
-    id: number
-    name: string
-    href: string
-    Icon: Icon
 }
 
 const sidebarOptions: SidebarOption[] = [
@@ -36,6 +32,7 @@ const Layout = async({ children }: LayoutProps) => {
     if(!session) notFound()
 
     const friends = await getFriendsByUserId(session.user.id)
+
     
     // フレンド申請待ちの待機数
     const unseenRequestCount = (
@@ -47,27 +44,32 @@ const Layout = async({ children }: LayoutProps) => {
 
   return (
     <div className='w-full flex h-screen'>
+        {/* モバイル表示 */}
+        <div className='md:hidden'>
+            <MobileChatLayout
+                session={session}
+                friends={friends}
+                sidebarOptions={sidebarOptions}
+                unseenRequestCount={unseenRequestCount}
+            />
+        </div>
         {/* サイドバー */}
         <div className='hidden md:flex h-full w-full max-w-xs grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6'>
             <Link href='/dashboard' className='flex h-16 shrink-0 items-center'>
-                <Icons.Logo className='h-8 w-auto text-indigo-600'/>
+                <HomeIcon.Logo className='h-8 w-auto text-indigo-600'/>
             </Link>
-
-            { friends.length > 0 ? (
-                <div className='text-xs font-semibold leading-6 text-gray-400'>
+            <div className='text-xs font-semibold leading-6 text-gray-400'>
                 Talk
-                </div>
-            ): null }
-        
+            </div>
             <nav className='flex flex-1 flex-col'>
                 <ul role='list' className='flex flex-1 flex-col gap-y-7'>
                     <li>
-                        < SidebarChatList sessionId = {session.user.id} friends = {friends} />
+                        <SidebarChatList sessionId = {session.user.id} friends = {friends} />
                     </li>
                     {/* ページリンク */}
                     <li>
                         <div className='text-xs font-semibold leading-6 text-gray-400'>
-                        Menu
+                        Overview
                         </div>
 
                         {/* フレンド追加のサイドバー */}
@@ -125,7 +127,6 @@ const Layout = async({ children }: LayoutProps) => {
                 </ul>
             </nav>
         </div>
-
         {/* メイン画面 */}
         <aside className='max-h-screen container py-16 md:py-12 w-full'>
         { children }

@@ -22,7 +22,9 @@ function getGoogleCredentials(){
 export const authOptions: NextAuthOptions = {
     adapter: UpstashRedisAdapter(db),
     session: {
-        strategy: 'jwt'
+        strategy: 'jwt',
+        // 1h
+        maxAge: 60*60,
     },
     pages:{
         signIn: '/login'

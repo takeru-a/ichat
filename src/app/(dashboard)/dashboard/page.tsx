@@ -28,7 +28,6 @@ const page: NextPage  = async ({}) => {
       )) as string[]
 
       const lastMessage = JSON.parse(lastMessageRaw) as Message
-
       return {
         ...friend,
         lastMessage,
