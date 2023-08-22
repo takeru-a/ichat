@@ -27,7 +27,17 @@ const page: NextPage  = async ({}) => {
         -1
       )) as string[]
 
-      const lastMessage = JSON.parse(lastMessageRaw) as Message
+      let lastMessage: Message = {
+        id:"",
+        receiverId:"",
+        senderId:"",
+        text:"",
+        timestamp:0
+      }
+      if(lastMessageRaw){
+        lastMessage = JSON.parse(lastMessageRaw) as Message
+      }
+      
       return {
         ...friend,
         lastMessage,
@@ -39,7 +49,8 @@ const page: NextPage  = async ({}) => {
     <div className='container py-12'>
        <h1 className='font-bold text-5xl mb-8'>最近のチャット</h1>
 
-       {friendsWithLastMessage.length === 0 ? (
+       {friendsWithLastMessage.length === 0 || 
+       friendsWithLastMessage.some(friend => !friend.lastMessage.id) ? (
         <p className='text-sm text-zinc-500'>最近のチャットが存在しません</p>
        ): (
         friendsWithLastMessage.map((friend) => (

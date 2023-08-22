@@ -6,6 +6,7 @@ import axios, { AxiosError } from 'axios'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useRouter } from 'next/navigation'
 
 interface AddFriendButtonProps {}
 
@@ -15,6 +16,7 @@ type FormData = z.infer<typeof addFriendValidator>
 export const AddFriendButton: FC<AddFriendButtonProps> = ({}) => {
 
     const [showSuccessState, setShowSuccessState] = useState<boolean>(false)
+    const router = useRouter()
     
     // react-hook-formの設定
     const {
@@ -36,6 +38,7 @@ export const AddFriendButton: FC<AddFriendButtonProps> = ({}) => {
             await axios.post('/api/friends/add',{
                 email: vaildatedEmail,
             })
+            router.refresh()
 
             // 追加に成功
             setShowSuccessState(true)
@@ -77,7 +80,7 @@ export const AddFriendButton: FC<AddFriendButtonProps> = ({}) => {
         </div>
         <p className='mt-1 text-sm text-red-600'>{errors.email?.message}</p>
         {showSuccessState ? (
-        <p className='mt-1 text-sm text-green-600'>Friend request sent!</p>
+        <p className='mt-1 text-sm text-green-600'>Add Friend!</p>
       ) : null}
     </form>
   )

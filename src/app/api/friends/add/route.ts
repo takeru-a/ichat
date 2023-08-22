@@ -20,6 +20,7 @@ export async function POST(req: Request) {
             `user:email:${emailToAdd}`
         )) as string
 
+        // 追加しようとしたユーザが存在しない
         if(!idToAdd){
             return new Response('This person does not exist', {status: 400})
         }
@@ -37,17 +38,6 @@ export async function POST(req: Request) {
             return new Response('You cannot add yourself as a friend', {status: 400})
         }
 
-        // 既にフレンド申請している
-        const isAlreadyAdded = (await fetchRedis(
-            'sismember',
-            `user:${idToAdd}:incoming_friend_requests`,
-            session.user.id
-        )) as 0 | 1
-
-        if (isAlreadyAdded) {
-            return new Response('Already added this user', { status: 400 })
-        }
-
         // 既にフレンドか
         const isAlreadyFriends = (await fetchRedis(
             'sismember',
@@ -55,23 +45,39 @@ export async function POST(req: Request) {
             idToAdd
           )) as 0 | 1
       
+        // 既にフレンドである場合
         if (isAlreadyFriends) {
         return new Response('Already friends with this user', { status: 400 })
         }
 
-        // イベント作成
-        await pusherServer.trigger(
-            toPusherKey(`user:${idToAdd}:incoming_friend_requests`),
-            'incoming_friend_requests',
-            {
-                senderId: session.user.id,
-                senderEmail: session.user.email,
-            }
-        )
+        const [userRaw, friendRaw] = (await Promise.all([
+            fetchRedis('get', `user:${session.user.id}`),
+            fetchRedis('get', `user:${idToAdd}`),
+        ])) as [string, string]
 
-          //　フレンド追加しようとしているユーザに申請する
-        await db.sadd(`user:${idToAdd}:incoming_friend_requests`, session.user.id)
-          
+        const user = JSON.parse(userRaw) as User
+        const friend = JSON.parse(friendRaw) as User
+        
+        // 追加通知
+        await Promise.all([
+            // 各イベントの作成
+            pusherServer.trigger(
+                toPusherKey(`user:${idToAdd}:friends`),
+                'new_friend',
+                user
+            ),
+            pusherServer.trigger(
+                toPusherKey(`user:${session.user.id}:friends`),
+                'new_friend',
+                friend
+            ),
+        // フレンドに追加
+        // 自分の友達リストに追加
+        db.sadd(`user:${session.user.id}:friends`, idToAdd),
+        // 友達リストに追加
+        db.sadd(`user:${idToAdd}:friends`, session.user.id),
+        ])
+
         return new Response('OK')
     } catch (error) {
         if(error instanceof z.ZodError){
