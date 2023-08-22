@@ -18,6 +18,11 @@ interface Message {
     timestamp: number
 }
 
+interface ExtendMessage extends Message{
+    senderImg: string
+    senderName: string
+}
+
 interface FriendRequest {
     id: string
     senderId: string
