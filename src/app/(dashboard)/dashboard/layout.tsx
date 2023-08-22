@@ -43,7 +43,7 @@ const Layout = async({ children }: LayoutProps) => {
                         />
                     </li>
                     {/* ログインユーザ情報 */}
-                    <li className='-mx-6 mt-auto flex items-center pr-64'>
+                    <li className='-mx-6 mt-auto flex items-center'>
                         <div className='flex flex-1 items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900'>
                             <div className='relative h-8 w-8 bg-gray-50'>
                                 <Image
@@ -63,7 +63,6 @@ const Layout = async({ children }: LayoutProps) => {
                                 </span>
                             </div>
                         </div>
-                        <SignOutButton className='h-full aspect-square' />
                     </li>
                 </ul>
             </nav>
