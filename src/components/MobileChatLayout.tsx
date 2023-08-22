@@ -4,7 +4,7 @@ import { Transition, Dialog } from '@headlessui/react'
 import { SidebarOption } from '@/types/typings'
 import { Session } from 'next-auth'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { FC, Fragment, useEffect, useState } from 'react'
 import { Icons } from './Icons'
 import Button, { buttonVariants } from './ui/Button'
@@ -13,6 +13,10 @@ import SidebarChatList from './SidebarChatList'
 import { FriendRequestSidebarOptions } from './FriendRequestSidebarOptions'
 import Image from 'next/image'
 import { SignOutButton } from './SignOutButton'
+import { chatHrefConstructor, toPusherKey } from '@/lib/utils'
+import { pusherClient } from '@/lib/pusher'
+import { toast } from 'react-hot-toast'
+import UnseenChatToast from './UnseenChatToast'
 
 interface MobileChatLayoutProps {
     friends: User[]
@@ -30,6 +34,40 @@ const MobileChatLayout: FC<MobileChatLayoutProps> = ({
     const [open, setOpen] = useState<boolean>(false)
 
     const pathname = usePathname()
+    const router = useRouter()
+
+        // リアルタイム通知
+        useEffect(() => {
+            // 各チャンネルを監視
+            // 新しいチャットを監視
+            pusherClient.subscribe(toPusherKey(`user:${session.user.id}:chats`))
+
+            const chatHandler = (message: ExtendMessage) => {
+                const shouldNotify = 
+                pathname !==
+                `/dashboard/chat/${chatHrefConstructor(session.user.id, message.senderId)}`
+                // チャットルームを開いてるときはリターンする
+                if (!shouldNotify) return
+    
+                // 未読のメッセージの表示
+                toast.custom((t) => (
+                    <UnseenChatToast
+                        t={t}
+                        sessionId={session.user.id}
+                        senderId={message.senderId}
+                        senderImg={message.senderImg}
+                        senderMessage={message.text}
+                        senderName={message.senderName}
+                    />
+                ))
+            }
+            // イベントを監視
+            pusherClient.bind('new_message', chatHandler)  
+            return () => {
+                pusherClient.unsubscribe(toPusherKey(`user:${session.user.id}:chats`))
+                pusherClient.unbind('new_message', chatHandler)
+            }
+        }, [pathname, session.user.id, router])
 
     useEffect(() => {
         setOpen(false)
@@ -41,7 +79,7 @@ const MobileChatLayout: FC<MobileChatLayoutProps> = ({
         <Link
           href='/dashboard'
           className={buttonVariants({ variant: 'ghost' })}>
-          <Icons.Logo className='h-6 w-auto text-indigo-600' />
+          <Icons.Logo className='h-8 w-auto text-indigo-600' />
         </Link>
         <Button onClick={() => setOpen(true)} className='gap-4'>
           Menu <Menu className='h-6 w-6' />

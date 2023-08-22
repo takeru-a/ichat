@@ -4,19 +4,11 @@ import { pusherClient } from '@/lib/pusher'
 import { chatHrefConstructor, toPusherKey } from '@/lib/utils'
 import { usePathname, useRouter } from 'next/navigation'
 import { FC, useEffect, useState } from 'react'
-import { toast } from 'react-hot-toast'
-import UnseenChatToast from './UnseenChatToast'
 
 interface SidebarChatListProps {
     friends: User[]
     sessionId: string
 }
-
-interface ExtendMessage extends Message{
-    senderImg: string
-    senderName: string
-}
-
 
 const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
 
@@ -25,7 +17,6 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
     // 未読メッセージ
     const [unseenMessages, setUnseenMessages] = useState<Message[]>([])
     const [activateChats, setActivateChats] = useState<User[]>(friends)
-
 
     // リアルタイム反映
     useEffect(() => {
@@ -43,20 +34,8 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
             const shouldNotify = 
             pathname !==
             `/dashboard/chat/${chatHrefConstructor(sessionId, message.senderId)}`
-            // 通知相手がいるか
+            // チャットルームを開いてるときはリターンする
             if (!shouldNotify) return
-
-            // 未読のメッセージの表示
-            toast.custom((t) => (
-                <UnseenChatToast
-                    t={t}
-                    sessionId={sessionId}
-                    senderId={message.senderId}
-                    senderImg={message.senderImg}
-                    senderMessage={message.text}
-                    senderName={message.senderName}
-                />
-            ))
             setUnseenMessages((prev) => [...prev, message])
         }
 
