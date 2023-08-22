@@ -1,4 +1,5 @@
 # ichat
+簡単なチャットアプリ  
 
 ## Product
 [App](https://ichat-kappa.vercel.app/)
