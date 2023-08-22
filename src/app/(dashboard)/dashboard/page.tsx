@@ -3,7 +3,6 @@ import { fetchRedis } from '@/helpers/redis'
 import { authOptions } from '@/lib/auth'
 import { chatHrefConstructor } from '@/lib/utils'
 import { ChevronRight } from 'lucide-react'
-import { NextPage } from 'next'
 import { getServerSession } from 'next-auth'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,7 +10,7 @@ import { notFound } from 'next/navigation'
 
 
 
-const page: NextPage  = async ({}) => {
+const page = async ({}) => {
 
   const session = await getServerSession(authOptions)
   if(!session) notFound()
