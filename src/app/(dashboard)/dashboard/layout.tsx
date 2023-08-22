@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation'
 import { ReactNode } from 'react'
 import Image from 'next/image'
 import { SignOutButton } from '@/components/SignOutButton'
-import { fetchRedis } from '@/helpers/redis'
 import { getFriendsByUserId } from '@/helpers/get-friends-by-user-id'
 import MobileChatLayout from '@/components/MobileChatLayout'
 import { SidebarOption } from '@/types/typings'
@@ -28,16 +27,6 @@ const Layout = async({ children }: LayoutProps) => {
     if(!session) notFound()
 
     const friends = await getFriendsByUserId(session.user.id)
-
-    
-    // フレンド申請待ちの待機数
-    const unseenRequestCount = (
-        (await fetchRedis(
-            'smembers',
-            `user:${session.user.id}:incoming_friend_requests`
-        )) as User[]
-    ).length
-
   return (
     <div className='w-full flex h-screen'>
         {/* モバイル表示 */}
@@ -46,7 +35,6 @@ const Layout = async({ children }: LayoutProps) => {
                 session={session}
                 friends={friends}
                 sidebarOptions={sidebarOptions}
-                unseenRequestCount={unseenRequestCount}
             />
         </div>
         {/* サイドバー */}

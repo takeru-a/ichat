@@ -22,9 +22,3 @@ interface ExtendMessage extends Message{
     senderImg: string
     senderName: string
 }
-
-interface FriendRequest {
-    id: string
-    senderId: string
-    receiverId: string
-  }

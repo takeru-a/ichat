@@ -10,7 +10,6 @@ import { Icons } from './Icons'
 import Button, { buttonVariants } from './ui/Button'
 import { Menu, X } from 'lucide-react'
 import SidebarChatList from './SidebarChatList'
-import { FriendRequestSidebarOptions } from './FriendRequestSidebarOptions'
 import Image from 'next/image'
 import { SignOutButton } from './SignOutButton'
 import { chatHrefConstructor, toPusherKey } from '@/lib/utils'
@@ -22,14 +21,12 @@ interface MobileChatLayoutProps {
     friends: User[]
     session: Session
     sidebarOptions: SidebarOption[]
-    unseenRequestCount: number
 }
 
 const MobileChatLayout: FC<MobileChatLayoutProps> = ({
     friends,
     session, 
-    sidebarOptions,
-    unseenRequestCount
+    sidebarOptions
 }) => {
     const [open, setOpen] = useState<boolean>(false)
 
@@ -154,15 +151,6 @@ const MobileChatLayout: FC<MobileChatLayoutProps> = ({
                                     </li>
                                   )
                                 })}
-
-                                <li>
-                                  <FriendRequestSidebarOptions
-                                    initialUnseenRequestCount={
-                                      unseenRequestCount
-                                    }
-                                    sessionId={session.user.id}
-                                  />
-                                </li>
                               </ul>
                             </li>
 
