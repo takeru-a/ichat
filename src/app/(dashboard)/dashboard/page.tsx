@@ -46,7 +46,7 @@ const page = async ({}) => {
 
   return (
     <div className='container py-12'>
-       <h1 className='font-bold text-5xl mb-8'>最近のチャット</h1>
+       <h1 className='font-bold text-4xl mb-8'>new chat</h1>
 
        {friendsWithLastMessage.length === 0 || 
        friendsWithLastMessage.some(friend => !friend.lastMessage.id) ? (
